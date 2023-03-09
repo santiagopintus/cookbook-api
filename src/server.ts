@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { ApolloServer } from "apollo-server-express";
+import { ApolloServerPluginLandingPageProductionDefault } from "apollo-server-core";
 import db from "./db";
 import schema from "./graphql/schema";
 import routes from "./routes";
@@ -13,6 +14,8 @@ app.use(express.json());
 app.use("/", routes);
 
 const server = new ApolloServer({
+  introspection: true, // enable introspection
+  plugins: [ApolloServerPluginLandingPageProductionDefault()],
   schema,
 });
 

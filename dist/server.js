@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const apollo_server_express_1 = require("apollo-server-express");
+const apollo_server_core_1 = require("apollo-server-core");
 const db_1 = __importDefault(require("./db"));
 const schema_1 = __importDefault(require("./graphql/schema"));
 const routes_1 = __importDefault(require("./routes"));
@@ -24,6 +25,8 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use("/", routes_1.default);
 const server = new apollo_server_express_1.ApolloServer({
+    introspection: true,
+    plugins: [(0, apollo_server_core_1.ApolloServerPluginLandingPageProductionDefault)()],
     schema: schema_1.default,
 });
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
