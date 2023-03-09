@@ -32,7 +32,7 @@ const schema = (0, graphql_1.buildSchema)(`
   This is the type for each ingredient in the recipe
   """
   type RecipeIngredient {
-    ingredient: ID!
+    ingredientId: ID!
     quantity: Float!
     unit: String!
   }
@@ -43,6 +43,15 @@ const schema = (0, graphql_1.buildSchema)(`
   input IngredientInput {
     name: String!
   }
+  
+  """
+  This is the input object type for creating an Ingredient.
+  """
+  input RecipeIngredientInput {
+    ingredientId: ID!
+    quantity: Float!
+    unit: String!
+  }
 
   """
   This is the input object type for creating a Recipe.
@@ -50,7 +59,7 @@ const schema = (0, graphql_1.buildSchema)(`
   input RecipeInput {
     title: String!
     description: String
-    ingredients: [IngredientInput!]!
+    ingredients: [RecipeIngredientInput!]!
     time: Int
     dinners: Int!
     instructions: String!

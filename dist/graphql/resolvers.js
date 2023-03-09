@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const recipe_1 = __importDefault(require("../models/recipe"));
 const ingredient_1 = __importDefault(require("../models/ingredient"));
+const apollo_server_errors_1 = require("apollo-server-errors");
+const postSchemas_1 = require("../validation/postSchemas");
 const resolvers = {
     Query: {
         // Resolver to fetch all ingredients
@@ -50,6 +52,12 @@ const resolvers = {
         createIngredient(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { name } = args;
+                const { error } = postSchemas_1.inputIngredientSchema.validate({ name });
+                // If there is an error, throw an error with custom messages
+                if (error) {
+                    const messages = error.details.map((detail) => detail.message);
+                    throw new apollo_server_errors_1.UserInputError("Failed to create recipe", { messages });
+                }
                 const newIngredient = new ingredient_1.default({ name });
                 yield newIngredient.save();
                 return newIngredient;
@@ -75,6 +83,21 @@ const resolvers = {
         createRecipe(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { title, description, ingredients, time, dinners, instructions, imgUrl, } = args.input;
+                // Validate input against Joi schema
+                const { error } = postSchemas_1.inputRecipeSchema.validate({
+                    title,
+                    description,
+                    ingredients,
+                    time,
+                    dinners,
+                    instructions,
+                    imgUrl,
+                }, { abortEarly: false });
+                // If there is an error, throw an error with custom messages
+                if (error) {
+                    const messages = error.details.map((detail) => detail.message);
+                    throw new apollo_server_errors_1.UserInputError("Failed to create recipe", { messages });
+                }
                 // Map ingredients array to an array of ingredient objects
                 const recipeIngredients = yield Promise.all(ingredients.map((recipeIngredient) => __awaiter(this, void 0, void 0, function* () {
                     const { ingredient, quantity, unit } = recipeIngredient;

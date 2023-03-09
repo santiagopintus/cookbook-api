@@ -6,7 +6,7 @@ const recipeSchema = new mongoose_1.Schema({
     description: { type: String },
     ingredients: [
         {
-            ingredient: { type: mongoose_1.Schema.Types.ObjectId, ref: "Ingredient" },
+            ingredientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Ingredient" },
             quantity: { type: Number, required: true },
             unit: { type: String, required: true },
         },

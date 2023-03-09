@@ -7,7 +7,7 @@ const express_1 = require("express");
 const graphql_1 = __importDefault(require("./graphql"));
 const router = (0, express_1.Router)();
 router.get("/", (req, res) => {
-    res.send("HOME");
+    res.send('<a href="/graphql">See API Docs</a>');
 });
 router.use("/graphql", graphql_1.default);
 exports.default = router;
