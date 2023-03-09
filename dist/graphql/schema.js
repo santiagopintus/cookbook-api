@@ -12,7 +12,6 @@ const schema = (0, graphql_1.buildSchema)(`
   type Ingredient {
     id: ID!
     name: String!
-    quantity: Int
   }
 
   """
@@ -22,7 +21,20 @@ const schema = (0, graphql_1.buildSchema)(`
     id: ID!
     title: String!
     description: String
-    ingredients: [Ingredient!]!
+    ingredients: [RecipeIngredient!]!
+    time: Int
+    dinners: Int!
+    instructions: String!
+    imgUrl: String
+  }
+
+  """
+  This is the type for each ingredient in the recipe
+  """
+  type RecipeIngredient {
+    ingredient: ID!
+    quantity: Float!
+    unit: String!
   }
 
   """
@@ -30,7 +42,6 @@ const schema = (0, graphql_1.buildSchema)(`
   """
   input IngredientInput {
     name: String!
-    quantity: Int
   }
 
   """
@@ -40,6 +51,10 @@ const schema = (0, graphql_1.buildSchema)(`
     title: String!
     description: String
     ingredients: [IngredientInput!]!
+    time: Int
+    dinners: Int!
+    instructions: String!
+    imgUrl: String
   }
 
   """
@@ -74,12 +89,12 @@ const schema = (0, graphql_1.buildSchema)(`
     """
     Create an ingredient.
     """
-    createIngredient(name: String!, quantity: Int): Ingredient!
+    createIngredient(name: String!): Ingredient!
     
     """
     Update an ingredient by ID.
     """
-    updateIngredient(id: ID!, name: String, quantity: Int): Ingredient!
+    updateIngredient(id: ID!, name: String): Ingredient!
     
     """
     Delete an ingredient by ID.

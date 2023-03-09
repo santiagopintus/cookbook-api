@@ -5,7 +5,7 @@ export interface RecipeDocument extends Document {
   title: string;
   description?: string;
   ingredients: Array<{
-    ingredient: IngredientDocument;
+    ingredient: string;
     quantity: number;
     unit: string;
   }>;

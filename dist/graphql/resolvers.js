@@ -16,47 +16,54 @@ const recipe_1 = __importDefault(require("../models/recipe"));
 const ingredient_1 = __importDefault(require("../models/ingredient"));
 const resolvers = {
     Query: {
-        recipes() {
-            return __awaiter(this, void 0, void 0, function* () {
-                const recipes = yield recipe_1.default.find();
-                return recipes;
-            });
-        },
-        recipe(parent, args) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const recipe = yield recipe_1.default.findById(args.id);
-                return recipe;
-            });
-        },
+        // Resolver to fetch all ingredients
         ingredients() {
             return __awaiter(this, void 0, void 0, function* () {
                 const ingredients = yield ingredient_1.default.find();
                 return ingredients;
             });
         },
+        // Resolver to fetch an ingredient by id
         ingredient(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
                 const ingredient = yield ingredient_1.default.findById(args.id);
                 return ingredient;
             });
         },
+        // Resolver to fetch all recipes
+        recipes() {
+            return __awaiter(this, void 0, void 0, function* () {
+                const recipes = yield recipe_1.default.find();
+                return recipes;
+            });
+        },
+        // Resolver to fetch a recipe by id
+        recipe(parent, args) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const recipe = yield recipe_1.default.findById(args.id);
+                return recipe;
+            });
+        },
     },
     Mutation: {
+        // Resolver to create a new ingredient
         createIngredient(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { name, quantity } = args;
-                const newIngredient = new ingredient_1.default({ name, quantity });
+                const { name } = args;
+                const newIngredient = new ingredient_1.default({ name });
                 yield newIngredient.save();
                 return newIngredient;
             });
         },
+        // Resolver to update an ingredient by id
         updateIngredient(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { id, name, quantity } = args;
-                const updatedIngredient = yield ingredient_1.default.findByIdAndUpdate(id, { name, quantity }, { new: true });
+                const { id, name } = args;
+                const updatedIngredient = yield ingredient_1.default.findByIdAndUpdate(id, { name }, { new: true });
                 return updatedIngredient;
             });
         },
+        // Resolver to delete an ingredient by id
         deleteIngredient(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = args;
@@ -64,28 +71,53 @@ const resolvers = {
                 return id;
             });
         },
+        // Resolver to create a new recipe
         createRecipe(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { title, description, ingredients } = args.input;
-                const recipeIngredients = yield ingredient_1.default.insertMany(ingredients);
+                const { title, description, ingredients, time, dinners, instructions, imgUrl, } = args.input;
+                // Map ingredients array to an array of ingredient objects
+                const recipeIngredients = yield Promise.all(ingredients.map((recipeIngredient) => __awaiter(this, void 0, void 0, function* () {
+                    const { ingredient, quantity, unit } = recipeIngredient;
+                    const ingredientObj = yield ingredient_1.default.findById(ingredient);
+                    return { ingredient: ingredientObj, quantity, unit };
+                })));
                 const newRecipe = new recipe_1.default({
                     title,
                     description,
                     ingredients: recipeIngredients,
+                    time,
+                    dinners,
+                    instructions,
+                    imgUrl,
                 });
                 yield newRecipe.save();
                 return newRecipe;
             });
         },
+        // Resolver to update a recipe by id
         updateRecipe(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id, input } = args;
-                const { title, description, ingredients } = input;
-                const recipeIngredients = yield ingredient_1.default.insertMany(ingredients);
-                const updatedRecipe = yield recipe_1.default.findByIdAndUpdate(id, { title, description, ingredients: recipeIngredients }, { new: true });
+                const { title, description, ingredients, time, dinners, instructions, imgUrl, } = input;
+                // Map ingredients array to an array of ingredient objects
+                const recipeIngredients = yield Promise.all(ingredients.map((recipeIngredient) => __awaiter(this, void 0, void 0, function* () {
+                    const { ingredient, quantity, unit } = recipeIngredient;
+                    const ingredientObj = yield ingredient_1.default.findById(ingredient);
+                    return { ingredient: ingredientObj, quantity, unit };
+                })));
+                const updatedRecipe = yield recipe_1.default.findByIdAndUpdate(id, {
+                    title,
+                    description,
+                    ingredients: recipeIngredients,
+                    time,
+                    dinners,
+                    instructions,
+                    imgUrl,
+                }, { new: true });
                 return updatedRecipe;
             });
         },
+        // Resolver to delete a recipe by id
         deleteRecipe(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = args;
@@ -97,8 +129,12 @@ const resolvers = {
     Recipe: {
         ingredients(parent) {
             return __awaiter(this, void 0, void 0, function* () {
-                const recipe = yield recipe_1.default.findById(parent.id).populate("ingredients");
-                return recipe.ingredients;
+                // Maps over the ingredients array in parent and return an array of objects containing ingredient, quantity, and unit properties
+                return parent.ingredients.map((recipeIngredient) => ({
+                    ingredient: recipeIngredient.ingredient,
+                    quantity: recipeIngredient.quantity,
+                    unit: recipeIngredient.unit,
+                }));
             });
         },
     },
