@@ -4,7 +4,7 @@ import graphqlRouter from "./graphql";
 const router: Router = Router();
 
 router.get("/", (req: Request, res: Response) => {
-  res.send("HOME");
+  res.send('<a href="/graphql">See API Docs</a>');
 });
 router.use("/graphql", graphqlRouter);
 

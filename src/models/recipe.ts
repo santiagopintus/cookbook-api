@@ -1,11 +1,10 @@
 import { Schema, Document, model } from "mongoose";
-import { IngredientDocument } from "./ingredient";
 
 export interface RecipeDocument extends Document {
   title: string;
   description?: string;
   ingredients: Array<{
-    ingredient: string;
+    ingredientId: string;
     quantity: number;
     unit: string;
   }>;
@@ -20,7 +19,7 @@ const recipeSchema = new Schema<RecipeDocument>({
   description: { type: String },
   ingredients: [
     {
-      ingredient: { type: Schema.Types.ObjectId, ref: "Ingredient" },
+      ingredientId: { type: Schema.Types.ObjectId, ref: "Ingredient" },
       quantity: { type: Number, required: true },
       unit: { type: String, required: true },
     },

@@ -1,5 +1,10 @@
 import RecipeModel from "../models/recipe";
 import IngredientModel from "../models/ingredient";
+import { UserInputError } from "apollo-server-errors";
+import {
+  inputRecipeSchema,
+  inputIngredientSchema,
+} from "../validation/postSchemas";
 
 const resolvers = {
   Query: {
@@ -32,6 +37,14 @@ const resolvers = {
     // Resolver to create a new ingredient
     async createIngredient(parent: any, args: any) {
       const { name } = args;
+      const { error } = inputIngredientSchema.validate({ name });
+
+      // If there is an error, throw an error with custom messages
+      if (error) {
+        const messages = error.details.map((detail) => detail.message);
+        throw new UserInputError("Failed to create recipe", { messages });
+      }
+
       const newIngredient = new IngredientModel({ name });
       await newIngredient.save();
       return newIngredient;
@@ -66,6 +79,25 @@ const resolvers = {
         instructions,
         imgUrl,
       } = args.input;
+
+      // Validate input against Joi schema
+      const { error } = inputRecipeSchema.validate(
+        {
+          title,
+          description,
+          ingredients,
+          time,
+          dinners,
+          instructions,
+          imgUrl,
+        },
+        { abortEarly: false }
+      );
+      // If there is an error, throw an error with custom messages
+      if (error) {
+        const messages = error.details.map((detail) => detail.message);
+        throw new UserInputError("Failed to create recipe", { messages });
+      }
 
       // Map ingredients array to an array of ingredient objects
       const recipeIngredients = await Promise.all(
