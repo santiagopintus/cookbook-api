@@ -9,7 +9,7 @@
     "dev": "nodemon ./src/server.ts"
   },
   "engines": {
-    "node": "14.20.1"
+    "node": "18.12.1"
   },
   "repository": {
     "type": "git",
