@@ -1,6 +1,6 @@
 import RecipeModel from "../models/recipe";
 import IngredientModel from "../models/ingredient";
-
+import { handleError } from "../validation/HttpError";
 const resolvers = {
   Query: {
     // Resolver to fetch all ingredients
@@ -16,7 +16,7 @@ const resolvers = {
     },
 
     // Resolver to fetch all recipes
-    async recipes() {
+    async recipes(parent: any) {
       const recipes = await RecipeModel.find();
       return recipes;
     },
@@ -31,117 +31,119 @@ const resolvers = {
   Mutation: {
     // Resolver to create a new ingredient
     async createIngredient(parent: any, args: any) {
-      const { name } = args;
-      const newIngredient = new IngredientModel({ name });
-      await newIngredient.save();
-      return newIngredient;
+      try {
+        const { name } = args;
+        const newIngredient = new IngredientModel({ name });
+        await newIngredient.save();
+        return newIngredient;
+      } catch (err) {
+        throw handleError(err, "ingredient");
+      }
     },
 
     // Resolver to update an ingredient by id
     async updateIngredient(parent: any, args: any) {
-      const { id, name } = args;
-      const updatedIngredient = await IngredientModel.findByIdAndUpdate(
-        id,
-        { name },
-        { new: true }
-      );
-      return updatedIngredient;
+      try {
+        const ingredient = await IngredientModel.findOne({ _id: args.id });
+        if (!ingredient) {
+          throw new Error(`Ingredient with id ${args.id} not found`);
+        }
+
+        const updatedIngredient = await IngredientModel.findByIdAndUpdate(
+          args.id,
+          { name: args.name },
+          { new: true }
+        );
+
+        return updatedIngredient;
+      } catch (err) {
+        throw handleError(err, "ingredient");
+      }
     },
 
     // Resolver to delete an ingredient by id
     async deleteIngredient(parent: any, args: any) {
-      const { id } = args;
-      await IngredientModel.findByIdAndDelete(id);
-      return id;
+      try {
+        const { id } = args;
+        await IngredientModel.findByIdAndDelete(id);
+        return id;
+      } catch (err) {
+        throw handleError(err, "ingredient");
+      }
     },
 
     // Resolver to create a new recipe
     async createRecipe(parent: any, args: any) {
-      const {
-        title,
-        description,
-        ingredients,
-        time,
-        dinners,
-        instructions,
-        imgUrl,
-      } = args.input;
-
-      // Map ingredients array to an array of ingredient objects
-      const recipeIngredients = await Promise.all(
-        ingredients.map(async (recipeIngredient) => {
-          const { ingredient, quantity, unit } = recipeIngredient;
-          const ingredientObj = await IngredientModel.findById(ingredient);
-          return { ingredient: ingredientObj, quantity, unit };
-        })
-      );
-
-      const newRecipe = new RecipeModel({
-        title,
-        description,
-        ingredients: recipeIngredients,
-        time,
-        dinners,
-        instructions,
-        imgUrl,
-      });
-      await newRecipe.save();
-      return newRecipe;
-    },
-
-    // Resolver to update a recipe by id
-    async updateRecipe(parent: any, args: any) {
-      const { id, input } = args;
-      const {
-        title,
-        description,
-        ingredients,
-        time,
-        dinners,
-        instructions,
-        imgUrl,
-      } = input;
-
-      // Map ingredients array to an array of ingredient objects
-      const recipeIngredients = await Promise.all(
-        ingredients.map(async (recipeIngredient) => {
-          const { ingredient, quantity, unit } = recipeIngredient;
-          const ingredientObj = await IngredientModel.findById(ingredient);
-          return { ingredient: ingredientObj, quantity, unit };
-        })
-      );
-
-      const updatedRecipe = await RecipeModel.findByIdAndUpdate(
-        id,
-        {
+      try {
+        const {
           title,
           description,
-          ingredients: recipeIngredients,
+          ingredients,
           time,
           dinners,
           instructions,
           imgUrl,
-        },
-        { new: true }
-      );
-      return updatedRecipe;
+        } = args.input;
+        const newRecipe = new RecipeModel({
+          title,
+          description,
+          ingredients,
+          time,
+          dinners,
+          instructions,
+          imgUrl,
+        });
+        await newRecipe.save();
+        return newRecipe;
+      } catch (err) {
+        throw handleError(err, "recipe");
+      }
+    },
+
+    // Resolver to update a recipe by id
+    async updateRecipe(parent: any, args: any) {
+      try {
+        const recipeExists = await RecipeModel.exists({ _id: args.id });
+        if (!recipeExists) {
+          throw new Error(`Recipe with id ${args.id} does not exist`);
+        }
+        const {
+          title,
+          description,
+          ingredients,
+          time,
+          dinners,
+          instructions,
+          imgUrl,
+        } = args.input;
+        const updatedRecipe = await RecipeModel.findByIdAndUpdate(
+          args.id,
+          {
+            title,
+            description,
+            ingredients,
+            time,
+            dinners,
+            instructions,
+            imgUrl,
+          },
+          { new: true }
+        );
+        return updatedRecipe;
+      } catch (err) {
+        throw handleError(err, "recipe");
+      }
     },
 
     // Resolver to delete a recipe by id
     async deleteRecipe(parent: any, args: any) {
-      const { id } = args;
-      await RecipeModel.findByIdAndDelete(id);
-      return id;
-    },
-  },
-  Recipe: {
-    async ingredients(parent: any) {
-      // Maps over the ingredients array in parent and return an array of objects containing ingredient, quantity, and unit properties
-      return parent.ingredients.map((recipeIngredient) => ({
-        ingredient: recipeIngredient.ingredient,
-        quantity: recipeIngredient.quantity,
-        unit: recipeIngredient.unit,
-      }));
+      try {
+        const { id } = args;
+        await RecipeModel.findByIdAndDelete(id);
+        return id;
+      } catch (err) {
+        throw handleError(err, "recipe");
+      }
     },
   },
 };

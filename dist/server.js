@@ -20,7 +20,8 @@ const db_1 = __importDefault(require("./db"));
 const schema_1 = __importDefault(require("./graphql/schema"));
 const routes_1 = __importDefault(require("./routes"));
 const app = (0, express_1.default)();
-const port = process.env.PORT || 1234;
+let localPort = 1234;
+const port = process.env.PORT || localPort;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use("/", routes_1.default);
@@ -30,20 +31,35 @@ const server = new apollo_server_express_1.ApolloServer({
     plugins: [(0, apollo_server_core_1.ApolloServerPluginLandingPageGraphQLPlayground)()], //Enable playground
 });
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield server.start();
-    server.applyMiddleware({ app });
-    db_1.default.once("open", () => {
-        console.log("Connected to MongoDB");
-        app.listen(port, () => {
-            console.log(`Server listening on port ${port}`);
+    try {
+        yield server.start();
+        server.applyMiddleware({ app });
+        db_1.default.once("open", () => {
+            console.log("Connected to MongoDB");
+            app.listen(port, () => {
+                console.log(`Server listening on port ${port}`);
+            });
         });
-    });
-    process.on("SIGINT", () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log("\nClosing server...");
-        yield server.stop();
-        console.log("Server closed.");
-        process.exit(0);
-    }));
+        process.on("SIGINT", () => __awaiter(void 0, void 0, void 0, function* () {
+            console.log("\nClosing server...");
+            yield server.stop();
+            console.log("Server closed.");
+            process.exit(0);
+        }));
+    }
+    catch (error) {
+        if (error.code === "EADDRINUSE") {
+            console.log(`Port ${port} is already in use, trying another port...`);
+            localPort++;
+            app.delete;
+            app.listen(localPort, () => {
+                console.log(`Server listening on port ${localPort}`);
+            });
+        }
+        else {
+            console.error("Error starting server:", error);
+        }
+    }
 });
 startServer();
 //# sourceMappingURL=server.js.map

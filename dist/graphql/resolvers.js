@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const recipe_1 = __importDefault(require("../models/recipe"));
 const ingredient_1 = __importDefault(require("../models/ingredient"));
+const HttpError_1 = require("../validation/HttpError");
 const resolvers = {
     Query: {
         // Resolver to fetch all ingredients
@@ -31,7 +32,7 @@ const resolvers = {
             });
         },
         // Resolver to fetch all recipes
-        recipes() {
+        recipes(parent) {
             return __awaiter(this, void 0, void 0, function* () {
                 const recipes = yield recipe_1.default.find();
                 return recipes;
@@ -49,92 +50,104 @@ const resolvers = {
         // Resolver to create a new ingredient
         createIngredient(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { name } = args;
-                const newIngredient = new ingredient_1.default({ name });
-                yield newIngredient.save();
-                return newIngredient;
+                try {
+                    const { name } = args;
+                    const newIngredient = new ingredient_1.default({ name });
+                    yield newIngredient.save();
+                    return newIngredient;
+                }
+                catch (err) {
+                    throw (0, HttpError_1.handleError)(err, "ingredient");
+                }
             });
         },
         // Resolver to update an ingredient by id
         updateIngredient(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { id, name } = args;
-                const updatedIngredient = yield ingredient_1.default.findByIdAndUpdate(id, { name }, { new: true });
-                return updatedIngredient;
+                try {
+                    const ingredient = yield ingredient_1.default.findOne({ _id: args.id });
+                    if (!ingredient) {
+                        throw new Error(`Ingredient with id ${args.id} not found`);
+                    }
+                    const updatedIngredient = yield ingredient_1.default.findByIdAndUpdate(args.id, { name: args.name }, { new: true });
+                    return updatedIngredient;
+                }
+                catch (err) {
+                    throw (0, HttpError_1.handleError)(err, "ingredient");
+                }
             });
         },
         // Resolver to delete an ingredient by id
         deleteIngredient(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { id } = args;
-                yield ingredient_1.default.findByIdAndDelete(id);
-                return id;
+                try {
+                    const { id } = args;
+                    yield ingredient_1.default.findByIdAndDelete(id);
+                    return id;
+                }
+                catch (err) {
+                    throw (0, HttpError_1.handleError)(err, "ingredient");
+                }
             });
         },
         // Resolver to create a new recipe
         createRecipe(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { title, description, ingredients, time, dinners, instructions, imgUrl, } = args.input;
-                // Map ingredients array to an array of ingredient objects
-                const recipeIngredients = yield Promise.all(ingredients.map((recipeIngredient) => __awaiter(this, void 0, void 0, function* () {
-                    const { ingredient, quantity, unit } = recipeIngredient;
-                    const ingredientObj = yield ingredient_1.default.findById(ingredient);
-                    return { ingredient: ingredientObj, quantity, unit };
-                })));
-                const newRecipe = new recipe_1.default({
-                    title,
-                    description,
-                    ingredients: recipeIngredients,
-                    time,
-                    dinners,
-                    instructions,
-                    imgUrl,
-                });
-                yield newRecipe.save();
-                return newRecipe;
+                try {
+                    const { title, description, ingredients, time, dinners, instructions, imgUrl, } = args.input;
+                    const newRecipe = new recipe_1.default({
+                        title,
+                        description,
+                        ingredients,
+                        time,
+                        dinners,
+                        instructions,
+                        imgUrl,
+                    });
+                    yield newRecipe.save();
+                    return newRecipe;
+                }
+                catch (err) {
+                    throw (0, HttpError_1.handleError)(err, "recipe");
+                }
             });
         },
         // Resolver to update a recipe by id
         updateRecipe(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { id, input } = args;
-                const { title, description, ingredients, time, dinners, instructions, imgUrl, } = input;
-                // Map ingredients array to an array of ingredient objects
-                const recipeIngredients = yield Promise.all(ingredients.map((recipeIngredient) => __awaiter(this, void 0, void 0, function* () {
-                    const { ingredient, quantity, unit } = recipeIngredient;
-                    const ingredientObj = yield ingredient_1.default.findById(ingredient);
-                    return { ingredient: ingredientObj, quantity, unit };
-                })));
-                const updatedRecipe = yield recipe_1.default.findByIdAndUpdate(id, {
-                    title,
-                    description,
-                    ingredients: recipeIngredients,
-                    time,
-                    dinners,
-                    instructions,
-                    imgUrl,
-                }, { new: true });
-                return updatedRecipe;
+                try {
+                    const recipeExists = yield recipe_1.default.exists({ _id: args.id });
+                    if (!recipeExists) {
+                        throw new Error(`Recipe with id ${args.id} does not exist`);
+                    }
+                    const { title, description, ingredients, time, dinners, instructions, imgUrl, } = args.input;
+                    const updatedRecipe = yield recipe_1.default.findByIdAndUpdate(args.id, {
+                        title,
+                        description,
+                        ingredients,
+                        time,
+                        dinners,
+                        instructions,
+                        imgUrl,
+                    }, { new: true });
+                    return updatedRecipe;
+                }
+                catch (err) {
+                    throw (0, HttpError_1.handleError)(err, "recipe");
+                }
             });
         },
         // Resolver to delete a recipe by id
         deleteRecipe(parent, args) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { id } = args;
-                yield recipe_1.default.findByIdAndDelete(id);
-                return id;
-            });
-        },
-    },
-    Recipe: {
-        ingredients(parent) {
-            return __awaiter(this, void 0, void 0, function* () {
-                // Maps over the ingredients array in parent and return an array of objects containing ingredient, quantity, and unit properties
-                return parent.ingredients.map((recipeIngredient) => ({
-                    ingredient: recipeIngredient.ingredient,
-                    quantity: recipeIngredient.quantity,
-                    unit: recipeIngredient.unit,
-                }));
+                try {
+                    const { id } = args;
+                    yield recipe_1.default.findByIdAndDelete(id);
+                    return id;
+                }
+                catch (err) {
+                    throw (0, HttpError_1.handleError)(err, "recipe");
+                }
             });
         },
     },

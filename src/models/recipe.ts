@@ -1,6 +1,6 @@
 import { Schema, Document, model } from "mongoose";
-import { IngredientDocument } from "./ingredient";
 
+/* Mongoose schema used for validating data */
 export interface RecipeDocument extends Document {
   title: string;
   description?: string;
@@ -16,21 +16,34 @@ export interface RecipeDocument extends Document {
 }
 
 const recipeSchema = new Schema<RecipeDocument>({
-  title: { type: String, required: true, unique: true },
+  title: {
+    type: String,
+    required: [true, "Title field is required"],
+    unique: true,
+  },
   description: { type: String },
   ingredients: [
     {
-      ingredient: { type: Schema.Types.ObjectId, ref: "Ingredient" },
-      quantity: { type: Number, required: true },
-      unit: { type: String, required: true },
+      id: {
+        type: String,
+        required: [true, "Ingredient ID field is required"],
+      },
+      quantity: {
+        type: Number,
+        required: [true, "Quantity field is required"],
+      },
+      unit: { type: String, required: [true, "Unit field is required"] },
     },
   ],
   time: { type: Number },
-  dinners: { type: Number, required: true },
-  instructions: { type: String, required: true },
+  dinners: { type: Number, required: [true, "Dinners field is required"] },
+  instructions: {
+    type: String,
+    required: [true, "Instructions field is required"],
+    minLength: [10, "Instructions should be at least 10 characters long"],
+  },
   imgUrl: { type: String },
 });
-
 const Recipe = model<RecipeDocument>("Recipe", recipeSchema, "recipes");
 
 export default Recipe;
