@@ -8,6 +8,7 @@ import {
 import db from "./db";
 import schema from "./graphql/schema";
 import routes from "./routes";
+// import { auth } from "express-openid-connect";
 
 const app = express();
 let localPort: number = 1234;
