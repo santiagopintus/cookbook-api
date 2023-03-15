@@ -19,11 +19,33 @@ const apollo_server_core_1 = require("apollo-server-core");
 const db_1 = __importDefault(require("./db"));
 const schema_1 = __importDefault(require("./graphql/schema"));
 const routes_1 = __importDefault(require("./routes"));
+const logger = require("morgan");
+require("dotenv").config();
+const express_openid_connect_1 = require("express-openid-connect");
+//Whether or not is production environment
+const isProduction = process.env.NODE_ENV === "production";
 const app = (0, express_1.default)();
 let localPort = 1234;
 const port = process.env.PORT || localPort;
+app.use(logger("dev"));
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+/* CONFIG AUTH0 */
+const baseURL = isProduction
+    ? process.env.BASE_URL
+    : `http://localhost:${port}`;
+const config = {
+    authRequired: false,
+    auth0Logout: true,
+    baseURL,
+};
+app.use((0, express_openid_connect_1.auth)(config));
+// Make USER available everywhere
+app.use((req, res, next) => {
+    res.locals.user = req.oidc.user;
+    next();
+});
+/* Use this routes for the whole API */
 app.use("/", routes_1.default);
 const server = new apollo_server_express_1.ApolloServer({
     schema: schema_1.default,
