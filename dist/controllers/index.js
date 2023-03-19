@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const path = require("path");
 // Define middleware to serve the HOME view
 const homeApi = `
   <!DOCTYPE html>

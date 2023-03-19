@@ -1,6 +1,4 @@
-const path = require("path");
 // Define middleware to serve the HOME view
-
 const homeApi = `
   <!DOCTYPE html>
   <html lang="en">

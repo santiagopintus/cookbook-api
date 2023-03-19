@@ -1,10 +1,9 @@
-import { Router } from "express";
+import { Request, Response, NextFunction, Router } from "express";
+import { requiresAuth } from "express-openid-connect";
 const router: Router = Router();
 
-//Loads on /graphql route
-router.get("/", (rq, rs, next) => {
-  //By now lets Apollo default middleware to be called on /graphql route
-  next();
-});
+import { loadPlayground } from "../../controllers/graphql";
+
+router.get("/", requiresAuth(), loadPlayground);
 
 export default router;

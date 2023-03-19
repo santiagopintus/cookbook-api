@@ -31,13 +31,14 @@ app.use(logger("dev"));
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 /* CONFIG AUTH0 */
-const baseURL = isProduction
-    ? process.env.BASE_URL
-    : `http://localhost:${port}`;
+const baseURL = isProduction ? process.env.BASE_URL : "http://localhost:1234";
 const config = {
     authRequired: false,
     auth0Logout: true,
-    baseURL,
+    issuerBaseURL: process.env.ISSUER_BASE_URL,
+    baseURL: baseURL,
+    clientID: process.env.CLIENT_ID,
+    secret: process.env.SECRET,
 };
 app.use((0, express_openid_connect_1.auth)(config));
 // Make USER available everywhere
