@@ -31,11 +31,38 @@ const resolvers = {
                 return ingredient;
             });
         },
+        // // Resolver to fetch all recipes
+        // async recipes(parent: any) {
+        //   const recipes = await RecipeModel.find();
+        //   return recipes;
+        // },
         // Resolver to fetch all recipes
         recipes(parent) {
             return __awaiter(this, void 0, void 0, function* () {
-                const recipes = yield recipe_1.default.find();
-                return recipes;
+                try {
+                    const recipes = yield recipe_1.default.find().populate("ingredients.id", "name");
+                    console.log(recipes); // Check the structure of populated data
+                    return recipes.map((recipe) => (Object.assign(Object.assign({}, recipe.toObject()), { id: recipe._id.toString(), ingredients: recipe.ingredients.map((ingredient) => {
+                            if (!ingredient.id || !ingredient.id.name) {
+                                console.error("Ingredient or ingredient name is missing");
+                                console.log(ingredient); // Check the problematic ingredient
+                                throw new Error("Ingredient or ingredient name is missing");
+                            }
+                            const id = ingredient.id._id
+                                ? ingredient.id._id.toString()
+                                : ingredient.id.toString(); // Extract the id from the ObjectId
+                            return {
+                                id,
+                                name: ingredient.id.name,
+                                quantity: ingredient.quantity,
+                                unit: ingredient.unit,
+                            };
+                        }) })));
+                }
+                catch (error) {
+                    console.error(error);
+                    throw error;
+                }
             });
         },
         // Resolver to fetch a recipe by id

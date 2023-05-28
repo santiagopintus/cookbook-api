@@ -33,6 +33,7 @@ const schema = (0, graphql_1.buildSchema)(`
   """
   type RecipeIngredient {
     id: ID!
+    name: String!
     quantity: Float!
     unit: String!
   }

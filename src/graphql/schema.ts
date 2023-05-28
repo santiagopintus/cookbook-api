@@ -30,6 +30,7 @@ const schema: GraphQLSchema = buildSchema(`
   """
   type RecipeIngredient {
     id: ID!
+    name: String!
     quantity: Float!
     unit: String!
   }

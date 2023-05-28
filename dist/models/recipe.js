@@ -11,7 +11,8 @@ const recipeSchema = new mongoose_1.Schema({
     ingredients: [
         {
             id: {
-                type: String,
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: "Ingredient",
                 required: [true, "Ingredient ID field is required"],
             },
             quantity: {

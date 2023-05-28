@@ -1,11 +1,10 @@
 import { Schema, Document, model } from "mongoose";
 
-/* Mongoose schema used for validating data */
 export interface RecipeDocument extends Document {
   title: string;
   description?: string;
   ingredients: Array<{
-    ingredient: string;
+    id: string; // Reference to the Ingredient _id
     quantity: number;
     unit: string;
   }>;
@@ -25,7 +24,8 @@ const recipeSchema = new Schema<RecipeDocument>({
   ingredients: [
     {
       id: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: "Ingredient", // Reference the Ingredient model
         required: [true, "Ingredient ID field is required"],
       },
       quantity: {
@@ -44,6 +44,7 @@ const recipeSchema = new Schema<RecipeDocument>({
   },
   imgUrl: { type: String },
 });
+
 const Recipe = model<RecipeDocument>("Recipe", recipeSchema, "recipes");
 
 export default Recipe;
